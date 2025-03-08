@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import ProductSlider from '../components/ProductSlider';
 
 const Package = () => {
@@ -10,21 +9,56 @@ const Package = () => {
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        // Use relative URL for Vercel serverless function or set env variable
-        const apiUrl = process.env.REACT_APP_API_URL || "/api/fetchPackages";
-        const response = await axios.post(apiUrl, { limit: 56 });
-        console.log("API Response:", response.data);
+        // Native fetch with POST request
+        const response = await fetch("http://139.59.46.251:3300/product/product-list-admin", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ limit: 56 }),
+        });
 
-        let fetchedPackages = response.data?.data?.list || [];
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("API Response:", data);
+
+        let fetchedPackages = data?.data?.list || [];
         if (!Array.isArray(fetchedPackages) || fetchedPackages.length === 0) {
-          throw new Error("Empty API Response");
+          throw new Error("Empty or invalid API Response");
         }
         setPackages(fetchedPackages);
       } catch (error) {
-        console.error("Error fetching packages:", error);
+        console.error("Error fetching packages:", error.message);
+        // Static fallback data (56 products ka sample, aapka JSON based)
         const fallbackPackages = [
-          { _id: "1", name: "Running Shoes", priceRange: [{ price: 250 }], oldPrice: 400, description: "High-performance shoes.", images: [] },
-          { _id: "2", name: "Laptop", priceRange: [{ price: 1200 }], oldPrice: 1600, description: "Sleek and powerful.", images: [] },
+          {
+            _id: "66c9d0af9a698676faae418e",
+            name: "Electric Kettle",
+            priceRange: [{ price: 95 }],
+            oldPrice: 145,
+            description: "Portable electric kettle with fast boiling technology.",
+            images: ["https://via.placeholder.com/300?text=Kettle1", "https://via.placeholder.com/300?text=Kettle2"],
+          },
+          {
+            _id: "66c9d0af9a698676faae4190",
+            name: "Air Conditioner",
+            priceRange: [{ price: 1200 }],
+            oldPrice: 1600,
+            description: "Energy-efficient cooling solution.",
+            images: ["https://via.placeholder.com/300?text=AC"],
+          },
+          {
+            _id: "66c9d0af9a698676faae4192",
+            name: "Washing Machine",
+            priceRange: [{ price: 800 }],
+            oldPrice: 1000,
+            description: "Fully automatic washing machine.",
+            images: ["https://via.placeholder.com/300?text=WashingMachine"],
+          },
+          // Add more products here if needed, maine 3 daale hain example ke liye
         ];
         setPackages(fallbackPackages);
       } finally {
@@ -40,9 +74,10 @@ const Package = () => {
       {loading ? (
         <p className="text-center text-gray-500">Loading packages...</p>
       ) : packages.length === 0 ? (
-        <p className="text-center text-gray-500">No packages available.</p>
+        <p className="text-center text-gray-500">No packages available. Please try again later.</p>
       ) : (
         <div className="flex flex-col lg:flex-row gap-4 min-h-[450px]">
+          {/* Package Selection */}
           <div className="lg:w-2/5 w-full bg-white p-0 flex flex-col min-h-full">
             <h2 className="text-lg font-semibold mb-3">Select a Package</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2 flex-grow overflow-y-auto max-h-[500px]">
@@ -73,6 +108,8 @@ const Package = () => {
               ))}
             </div>
           </div>
+
+          {/* Checkout Section */}
           <div className="lg:w-3/5 w-full bg-white p-4 sm:p-6 rounded-lg shadow-md flex flex-col min-h-full">
             {selected ? (
               <>
@@ -87,6 +124,7 @@ const Package = () => {
                     </span>
                   )}
                 </p>
+
                 <div className="bg-gray-800 text-white text-sm py-2 px-3 mt-2 rounded-md text-center">
                   <span>
                     ✔️ OFFER CLAIMED! You save AED{" "}
@@ -94,6 +132,7 @@ const Package = () => {
                       (packages.find((p) => p.name === selected)?.priceRange[0]?.price || 0)}
                   </span>
                 </div>
+
                 <div className="mt-4 text-sm space-y-2 flex-grow">
                   <p className="flex justify-between">
                     <span className="text-gray-600">Product</span>
@@ -122,17 +161,20 @@ const Package = () => {
                     </span>
                   </p>
                 </div>
+
                 {packages.find((p) => p.name === selected)?.images?.length > 0 && (
                   <div className="mt-4">
                     <ProductSlider images={packages.find((p) => p.name === selected).images} customHeight="h-64 sm:h-80" highQuality={true} />
                   </div>
                 )}
+
                 <div className="bg-white p-4 rounded-lg mt-4 flex justify-between">
                   <p className="text-lg font-bold">Amount to pay:</p>
                   <p className="text-lg font-bold text-black">
                     AED {packages.find((p) => p.name === selected)?.priceRange[0]?.price || "0"}
                   </p>
                 </div>
+
                 <button className="w-full bg-black text-white py-2 mt-3 rounded-md flex justify-center items-center">
                   Pay AED {packages.find((p) => p.name === selected)?.priceRange[0]?.price || "0"} →
                 </button>
