@@ -10,7 +10,9 @@ const Package = () => {
   useEffect(() => {
     const fetchPackages = async () => {
       try {
-        const response = await axios.post("http://139.59.46.251:3300/product/product-list-admin", { limit: 56 });
+        // Use relative URL for Vercel serverless function or set env variable
+        const apiUrl = process.env.REACT_APP_API_URL || "/api/fetchPackages";
+        const response = await axios.post(apiUrl, { limit: 56 });
         console.log("API Response:", response.data);
 
         let fetchedPackages = response.data?.data?.list || [];
@@ -41,7 +43,6 @@ const Package = () => {
         <p className="text-center text-gray-500">No packages available.</p>
       ) : (
         <div className="flex flex-col lg:flex-row gap-4 min-h-[450px]">
-          {/* Package Selection */}
           <div className="lg:w-2/5 w-full bg-white p-0 flex flex-col min-h-full">
             <h2 className="text-lg font-semibold mb-3">Select a Package</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-2 flex-grow overflow-y-auto max-h-[500px]">
@@ -72,8 +73,6 @@ const Package = () => {
               ))}
             </div>
           </div>
-
-          {/* Checkout Section */}
           <div className="lg:w-3/5 w-full bg-white p-4 sm:p-6 rounded-lg shadow-md flex flex-col min-h-full">
             {selected ? (
               <>
@@ -88,7 +87,6 @@ const Package = () => {
                     </span>
                   )}
                 </p>
-
                 <div className="bg-gray-800 text-white text-sm py-2 px-3 mt-2 rounded-md text-center">
                   <span>
                     ✔️ OFFER CLAIMED! You save AED{" "}
@@ -96,7 +94,6 @@ const Package = () => {
                       (packages.find((p) => p.name === selected)?.priceRange[0]?.price || 0)}
                   </span>
                 </div>
-
                 <div className="mt-4 text-sm space-y-2 flex-grow">
                   <p className="flex justify-between">
                     <span className="text-gray-600">Product</span>
@@ -125,25 +122,17 @@ const Package = () => {
                     </span>
                   </p>
                 </div>
-
-                {/* Selected Package Images Slider with Better Quality */}
                 {packages.find((p) => p.name === selected)?.images?.length > 0 && (
                   <div className="mt-4">
-                    <ProductSlider 
-                      images={packages.find((p) => p.name === selected).images} 
-                      customHeight="h-64 sm:h-80" // Larger height for clarity
-                      highQuality={true} // New prop for quality control
-                    />
+                    <ProductSlider images={packages.find((p) => p.name === selected).images} customHeight="h-64 sm:h-80" highQuality={true} />
                   </div>
                 )}
-
                 <div className="bg-white p-4 rounded-lg mt-4 flex justify-between">
                   <p className="text-lg font-bold">Amount to pay:</p>
                   <p className="text-lg font-bold text-black">
                     AED {packages.find((p) => p.name === selected)?.priceRange[0]?.price || "0"}
                   </p>
                 </div>
-
                 <button className="w-full bg-black text-white py-2 mt-3 rounded-md flex justify-center items-center">
                   Pay AED {packages.find((p) => p.name === selected)?.priceRange[0]?.price || "0"} →
                 </button>
